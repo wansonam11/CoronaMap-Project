@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    <title>코로나맵</title>
+    <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=s4pgqri96m"></script>
+    <script type="text/javascript" src="/javascripts/main.js"></script>
+    <link rel="stylesheet" href="/stylesheets/style.css"/>
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=8a93473727e0d3f14152c9b69656664a&libraries=services"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" 
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" 
+            crossorigin="anonymous">
+    </script>
+</head>
+<body>
+  <ul id="navbar">
+    <li>
+      <a href="/">Corona Map(コロナ感染マップ)</a>
+    </li>
+    <li style="float: right;">
+        <a class="active" href="/upload">Upload</a>
+    </li>
+  </ul>
+
+
+<!--날짜-->
+<div id="infoBox">
+  <div id="infoTitle">現在の日付</div>
+  
+  <div id="infoContent">
+    <input type="text" id="date">
+  </div>
+</div>
+
+<!--현재위치-->
+<div id="current">現在の位置</div>
+
+<!--지도-->
+<div id="map" style="width:100%;height:100vh;"></div>
+<script type="text/javascript" src="/javascripts/MarkerClustering.js"></script>
+<script>
+var mapOptions = {
+    center: new naver.maps.LatLng(37.3595704, 127.105399),
+    zoom: 10
+};
+
+var map = new naver.maps.Map('map', mapOptions);
+
+$.ajax({   //mongoDB의 정보 불러오기.
+  url: "/location",
+  type: "GET",
+}).done(response => {
+  if(response.message !== "success") return;
+  const data = response.data;
+
+//n번째 마커를 클릭했을때 n번째 Info가 띄어지는지 알아야 하기때문.
+let markerList = [];
+let infowindowList = [];
+
+
+//Marker의 Info를 띄워주는 함수.  
+const getClickHandler = (i) => () => {
+  const marker = markerList[i];
+  const infowindow = infowindowList[i];
+
+  if(infowindow.getMap()){
+      infowindow.close();
+  }else{
+      infowindow.open(map, marker);
+  }
+};
+
+//지도를 클릭하면 Info를 꺼주는 함수.
+const getClickMap = (i) => () => {
+    const infowindow = infowindowList[i];
+    infowindow.close();
+}
+
+//여러개의 마커 표시
+for(let i in data) {
+    const target = data[i];
+    const latlng = new naver.maps.LatLng(target.lat, target.lng); 
+
+    let marker = new naver.maps.Marker({
+        map : map,
+        position: latlng,
+        icon : {
+            content : `<div class="marker"></div>`,
+            anchor : new naver.maps.Point(11, 11),
+        },
+    });
+
+    //InfoWindow 정보
+    const content = `
+    <div class="infowindow_wrap">
+      <div class="infowindow_title">${target.title}</div>
+      <div class="infowindow_address">${target.address}</div>
+    </div>
+    `;  
+    
+    //InfowWindow BOX 생성
+    const infowindow = new naver.maps.InfoWindow({
+      content : content,
+      backgroundColor : "#00ff0000",
+      borderColor : "#00ff0000",
+      anchorSize : new naver.maps.Size(0, 0), //꼬리표 제거
+    });
+
+    //배열안에 Marker와 InfowWindow가 담기도록.
+    markerList.push(marker);
+    infowindowList.push(infowindow);
+
+}
+
+//marker 클릭시, Info 띄어주도록
+for(let i=0, ii=markerList.length; i<ii; i++){
+    naver.maps.Event.addListener(markerList[i], "click", getClickHandler(i));
+    naver.maps.Event.addListener(map, "click", getClickMap(i));
+}
+
+
+//Cluster
+const cluster1 = {
+  content: `<div class="cluster1"></div>`,
+};
+
+const cluster2 = {
+  content: `<div class="cluster2"></div>`,
+};
+
+const cluster3 = {
+  content: `<div class="cluster3"></div>`,
+};
+
+//Cluster 실제작동.
+const markerClustering = new MarkerClustering({
+  minClusterSize : 2,
+  maxZoom : 12,
+  map : map,
+  markers : markerList,
+  disableClickZoom : false,
+  gridSize : 20,
+  icons: [cluster1, cluster2, cluster3],
+  indexGernerator : [2, 5, 10],
+  stylingFunction : (clusterMarker, count) => {
+    $(clusterMarker.getElement()).find("div:first-child").text(count);
+  },
+});
+});
+
+const urlPrefix = "https://navermaps.github.io/maps.js/docs/data/region"; //도별 정보
+const urlSuffix = ".json";
+
+let regionGeoJson = []; //결과값을 저장할 빈 배열.
+let loadCount = 0; //for문을 17개까지 count.
+
+const tooltip = $(
+  `<div style="position:absolute;
+    z-index:1000;
+    padding:5px 10px;
+    background:white;
+    border:1px solid black;
+    font-size:14px;
+    display:none;
+    pointer-events:none;">
+  </div>`
+
+);
+
+tooltip.appendTo(map.getPanes().floatPane);
+
+//구역별로 나누고, 이벤트 추가.
+naver.maps.Event.once(map, "init_stylemap", () => {
+  for(let i=1; i<18; i++){
+    let keyword = i.toString();
+    if(keyword.length ===1){
+      keyword = "0" + keyword;
+    }
+
+    $.ajax({
+      url : urlPrefix + keyword + urlSuffix,
+    }).done((geojson) => {
+      regionGeoJson.push(geojson);  //결과값을 배열안에 넣음.
+      loadCount++;
+      if(loadCount === 17) {
+        startDataLayer();
+      }
+    });
+  }
+});
+
+function startDataLayer(){
+  map.data.setStyle(feature => {
+    const styleOptions = {
+      fillColor : "#ff0000",
+      fillOpacity : 0.01,
+      strokeColor : "#ff0000",
+      strokeWeight: 2,
+      strokeOpacity: 0.4,
+    };
+
+    //focus했을때의 색깔변화
+    if(feature.getProperty("focus")){
+      styleOptions.fillOpacity = 0.4;
+      styleOptions.fillColor = "#0f0";
+      styleOptions.strokeColor = "#0f0";
+      styleOptions.strokeWeight = 4;
+      styleOptions.strokeOpacity = 1;
+    }
+
+    return styleOptions;
+  });
+
+  //빨간 경계선 표시
+  regionGeoJson.forEach((geojson) => {
+  
+    map.data.addGeoJson(geojson);
+  
+  });
+
+  //클릭했을때, focus되는 스타일
+  map.data.addListener("click", (e) => {
+    let feature = e.feature;
+    if(feature.getProperty("focus") !== true){
+      feature.setProperty("focus", true);
+    }else{
+      feature.setProperty("focus", false);
+    }
+  });
+
+  map.data.addListener("mouseover", (e) => {
+    let feature = e.feature;
+    let regionName = feature.getProperty("area1");
+    tooltip.css({
+      display: "block",
+      left : e.offset.x,
+      top: e.offset.y,
+    }).text(regionName);
+    map.data.overrideStyle(feature, {
+      fillOpacity: 0.6,
+      strokeWeight : 4,
+      strokeOpacity : 1,
+    });
+  });
+
+  map.data.addListener("mouseout", (e) => {
+    tooltip.hide().empty;
+    map.data.revertStyle();
+  })
+}
+
+//현재위치 무한클릭 방지
+let currentUse = true;
+
+//현재위치 JQuery
+$("#current").click(() => {
+  if("geolocation" in navigator){
+    navigator.geolocation.getCurrentPosition(function(position){
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      const latlng = new naver.maps.LatLng(lat, lng);
+      if(currentUse){
+        marker = new naver.maps.Marker({
+        map: map,
+        position: latlng,
+        icon: {
+          content : '<img class="pulse" draggable="false" unselectable="on" src="https://myfirstmap.s3.ap-northeast-2.amazonaws.com/circle.png">',
+          anchor : new naver.maps.Point(11, 11),
+        },
+      });
+        currentUse = false;
+      }
+      map.setZoom(14, false);
+      map.panTo(latlng);
+
+    });
+  }else {
+    alert('위치정보 사용 불가능');
+  }
+});
+
+
+//오늘날짜
+$(function() {
+  getTimeStamp();
+});
+
+function getTimeStamp() {
+  var d = new Date();
+  var date = leadingZeros(d.getFullYear(), 4) + '-' +
+
+    leadingZeros(d.getMonth() + 1, 2) + '-' +
+    leadingZeros(d.getDate(), 2) + ' ';
+
+    $('#date').val(date);
+
+}
+
+function leadingZeros(n, digits) {
+  var zero = '';
+  n = n.toString();
+
+if (n.length < digits) {
+    for (i = 0; i < digits - n.length; i++)
+        zero += '0';
+}
+
+return zero + n;
+}
+</script>
+<script type="text/javascript" src="/javascripts/main.js"></script>
+</body>
+</html>

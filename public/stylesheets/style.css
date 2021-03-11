@@ -1,0 +1,161 @@
+body {
+  padding: 0px !important;
+  margin: 0px !important;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00B7FF;
+}
+
+ul{
+  list-style: none;
+  margin: 0px;
+  padding: 0px;
+  overflow: hidden;
+  background-color: #333;
+  position: fixed;
+  width: 100%;
+  z-index: 1000;
+}
+
+#infoBox {
+  position: absolute;
+  top: 80px;
+  z-index: 10000;
+  background: white;
+  left: 20px;
+  padding: 15px;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+  text-align: center;
+}
+
+#infoTitle {
+  font-size: 15px;
+  font-weight: bolder;
+}
+
+#date{
+  text-align: center;
+}
+#current{
+  position: absolute;
+  top: 160px;
+  z-index: 10000;
+  background: white;
+  left: 20px;
+  padding: 15px;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+  text-align: center;
+  cursor: pointer;
+  font-weight: bolder;
+}
+
+.pulse{
+  display: block;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 0 rgb(255, 0, 0);
+  animation: pulse 1.3s infinite;
+}
+
+@-webkit-keyframes pulse{
+  0%{
+    box-shadow: 0 0 0 0 rgba(204, 49, 44, 0.4);
+    -moz-box-shadow: 0 0 0 0 rgba(204, 49, 44, 0.4);
+  }
+
+  70%{
+    box-shadow: 0 0 0 20px rgba(204, 49, 44, 0);
+    -moz-box-shadow: 0 0 0 20px rgba(204, 29, 44, 0);
+  }
+
+  100%{
+    box-shadow: 0 0 0 0 rgba(204, 49, 44, 0);
+    -moz-box-shadow:0 0 0 0 rgba(204, 49, 44, 0);
+  }
+}
+
+li{
+  float: left;
+}
+
+li a{
+  display: block;
+  color: white;
+  text-decoration: none;
+  text-align: center;
+  padding: 14px 16px;
+}
+
+.active{
+  background-color: green;
+}
+
+li a:hover:not(.active){
+  background-color: #111;
+}
+
+.marker {
+  width: 23px;
+  height: 23px;
+  background: green;
+  border : 1px solid black;
+  border-radius: 50%;
+}
+
+.infowindow_wrap {
+  background: white;
+  padding: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.infowindow_title {
+  font-size: 15px;
+  font-weight: bolder;
+}
+
+.infowindow_address {
+  font-size: 13px;
+  font-weight: normal;
+}
+
+.cluster1 {
+  width: 45px;
+  height : 45px;
+  line-height: 26px;
+  font-size : 10px;
+  border-radius: 50%;
+  color : white;
+  text-align: center;
+  font-weight: bold;
+  background: rgba(255, 149, 79, 0.7);
+}
+
+.cluster2 {
+  width: 30px;
+  height : 30px;
+  line-height: 31px;
+  font-size : 10px;
+  border-radius: 50%;
+  color : white;
+  text-align: center;
+  font-weight: bold;
+  background: rgba(255, 149, 79, 0.7);
+}
+
+.cluster3 {
+  width: 35px;
+  height : 35px;
+  line-height: 26px;
+  font-size : 10px;
+  border-radius: 50%;
+  color : white;
+  text-align: center;
+  font-weight: bold;
+  background: rgba(255, 149, 79, 0.7);
+}
