@@ -13,3 +13,7 @@
 2) Mongo DB
 3) JavaScript
 
+### 3. Main Output
+
+
+<img src="/C:\Users\user\Desktop\PortFolio Pictures\corona2\17.JPG></img>
