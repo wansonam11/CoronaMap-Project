@@ -15,5 +15,6 @@
 
 ### 3. Main Output
 
+![17](https://user-images.githubusercontent.com/35058547/113790578-a252b400-977c-11eb-8730-cb1fc4ba2706.JPG)
+![13](https://user-images.githubusercontent.com/35058547/113790599-aa125880-977c-11eb-820b-f52dc1102461.JPG)
 
-<img src="/C:\Users\user\Desktop\PortFolio Pictures\corona2\17.JPG></img>
