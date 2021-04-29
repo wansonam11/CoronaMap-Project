@@ -1,3 +1,5 @@
+https://user-images.githubusercontent.com/35058547/116610159-2c52fe80-a970-11eb-9d02-d0e60b9604b3.mp4
+
 # CoronaMap-Project
 <코로나 감염자 지도 API 서비스>
 ### 1.주요 기능
